@@ -23,7 +23,10 @@ Data Quality Validation
        ^
        |
 Apache Airflow
-Tech Stack
+```
+
+
+##Tech Stack
 Python
 PostgreSQL 16
 Apache Airflow 3.0.2
