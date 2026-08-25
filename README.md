@@ -54,6 +54,11 @@ etl-ecommerce-pipeline/
 │   ├── validation/
 │   └── utils/
 |
+├── screenshots/
+│   ├── airflow_dag_overview.png
+│   ├── airflow_successful_run.png
+│   └── airflow_schedule.png
+|
 ├── docker-compose.yml
 ├── .gitignore
 ├── README.md
@@ -355,6 +360,20 @@ python -m src.validation.customer_quality
 ```
 
 The complete pipeline is normally executed through Airflow.
+
+## Airflow Execution
+
+### DAG Overview
+
+![Airflow DAG Overview](screenshots/airflow_dag_overview.png)
+
+### Successful Pipeline Run
+
+![Successful Airflow Run](screenshots/airflow_successful_run.png)
+
+### Airflow Schedule
+
+![Airflow Schedule](screenshots/airflow_schedule.png)
 
 ## Key Learning Areas
 
