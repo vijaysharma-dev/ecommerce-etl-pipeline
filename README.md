@@ -1,8 +1,10 @@
 # Ecommerce ETL Pipeline
 
-An end-to-end ecommerce data engineering project built using Python, PostgreSQL, Docker, and Apache Airflow.
+An end-to-end ecommerce data engineering project built using **Python, PostgreSQL, Docker, and Apache Airflow**.
 
-This project demonstrates a complete ETL workflow from source PostgreSQL databases into an analytics warehouse, including staging, dimensional modeling, fact tables, data-quality validation, orchestration, retries, and scheduled execution.
+This project demonstrates a complete ETL workflow from source PostgreSQL databases into an analytics warehouse, including **staging, dimensional modeling, fact tables, data-quality validation, orchestration, retries, and scheduled execution**.
+
+---
 
 ## Architecture
 
@@ -10,10 +12,10 @@ This project demonstrates a complete ETL workflow from source PostgreSQL databas
 Source PostgreSQL
        |
        v
-Python ETL
+   Python ETL
        |
        v
-Staging Layer
+  Staging Layer
        |
        v
 Analytics Warehouse
@@ -22,8 +24,10 @@ Analytics Warehouse
 Data Quality Validation
        ^
        |
-Apache Airflow
+ Apache Airflow
 ```
+
+---
 
 ## Tech Stack
 
@@ -35,6 +39,8 @@ Apache Airflow
 - psycopg2
 - SQL
 - Git / GitHub
+
+---
 
 ## Project Structure
 
@@ -57,7 +63,10 @@ etl-ecommerce-pipeline/
 ├── screenshots/
 │   ├── airflow_dag_overview.png
 │   ├── airflow_successful_run.png
-│   └── airflow_schedule.png
+│   ├── docker_etl_infrastructure.png
+│   ├── etl_airflow_dag_code.png
+│   ├── postgresql_tables.png
+│   └── postgresql_warehouse_counts.png
 |
 ├── docker-compose.yml
 ├── .gitignore
@@ -65,65 +74,73 @@ etl-ecommerce-pipeline/
 └── .env
 ```
 
-## ETL Pipeline
+---
+
+# ETL Pipeline
 
 The pipeline processes five major entities:
 
-### Customers
+## Customers
 
 ```text
 Source
-  |
+   |
 Extract
-  |
+   |
 staging.stg_customers
-  |
+   |
 Load
-  |
+   |
 analytics.dim_customer
-  |
+   |
 Validation
 ```
 
 Validated count: **10,000 customers**
 
-### Products
+---
+
+## Products
 
 ```text
 Source
-  |
+   |
 Extract
-  |
+   |
 staging.stg_products
-  |
+   |
 Load
-  |
+   |
 analytics.dim_product
-  |
+   |
 Validation
 ```
 
 Validated count: **1,000 products**
 
-### Locations
+---
+
+## Locations
 
 ```text
 Source
-  |
+   |
 Extract
-  |
+   |
 staging.stg_locations
-  |
+   |
 Load
-  |
+   |
 analytics.dim_location
-  |
+   |
 Validation
 ```
 
 Validated count: **20 locations**
 
-### Orders
+---
+
+## Orders
 
 Orders depend on the customer and location dimensions.
 
@@ -131,17 +148,19 @@ Orders depend on the customer and location dimensions.
 Customer Validation ──┐
                       ├──> Extract Orders
 Location Validation ──┘
-                            |
-                            v
-                       Load Orders
-                            |
-                            v
-                    Validate Orders
+                           |
+                           v
+                      Load Orders
+                           |
+                           v
+                   Validate Orders
 ```
 
 Validated count: **100,000 orders**
 
-### Order Items
+---
+
+## Order Items
 
 Order items depend on products and orders.
 
@@ -156,7 +175,28 @@ Order Validation ────┘
 
 Validated count: **250,437 order items**
 
-## Analytics Warehouse
+---
+
+# Data Warehouse
+
+The target PostgreSQL database contains two main layers.
+
+## Staging Layer
+
+The staging layer stores extracted source data before loading it into the analytics layer.
+
+```text
+staging
+├── stg_customers
+├── stg_products
+├── stg_locations
+├── stg_orders
+└── stg_order_items
+```
+
+## Analytics Layer
+
+The analytics layer follows a dimensional warehouse structure.
 
 ### Dimensions
 
@@ -173,13 +213,23 @@ analytics.fact_order
 analytics.fact_order_item
 ```
 
-The warehouse uses surrogate keys for dimensions while maintaining source business keys for traceability.
+The warehouse uses **surrogate keys for dimensions** while maintaining source business keys for traceability.
 
-## Airflow
+---
 
-The complete ETL process is orchestrated using Apache Airflow.
+## Warehouse Tables
 
-### DAG
+The following screenshot shows the staging and analytics tables created in PostgreSQL.
+
+![PostgreSQL Warehouse Tables](screenshots/postgresql_tables.png)
+
+---
+
+# Airflow
+
+The complete ETL process is orchestrated using **Apache Airflow**.
+
+## DAG
 
 ```text
 ecommerce_etl_dag
@@ -196,7 +246,9 @@ The DAG manages:
 - Retries
 - Scheduled execution
 
-### Task Flow
+---
+
+## Task Flow
 
 ```text
 Customers
@@ -208,23 +260,27 @@ Extract → Load → Validate
                     v
               Extract Orders
                     |
-               Load Orders
+                Load Orders
                     |
-             Validate Orders
+              Validate Orders
                     |
                     v
-            Extract Order Items
+           Extract Order Items
                     |
              Load Order Items
 ```
 
-## Scheduling
+---
+
+# Scheduling
 
 Production schedule:
 
 ```text
 0 2 * * *
 ```
+
+The pipeline runs daily at **2:00 AM**.
 
 Timezone:
 
@@ -238,17 +294,28 @@ During development, automatic scheduling was tested using:
 */10 * * * *
 ```
 
-The 10-minute schedule successfully verified automatic Airflow scheduler execution before returning to the final daily schedule.
+The 10-minute schedule was used to verify automatic Airflow scheduler execution before returning to the final daily schedule.
 
-## Retry Handling
+---
+
+# Retry Handling
 
 The pipeline supports Airflow task retries for transient failures.
 
+Default configuration:
+
+```text
+Retries: 2
+Retry Delay: 5 minutes
+```
+
 This helps prevent temporary errors from immediately failing the entire workflow.
 
-## Data Quality
+---
 
-Validation compares source, staging, and analytics record counts.
+# Data Quality
+
+Data-quality validation compares source, staging, and analytics record counts.
 
 ```text
 Source Count
@@ -260,10 +327,10 @@ Staging Count
 Analytics Count
      |
      v
-PASS / FAIL
+  PASS / FAIL
 ```
 
-### Validated Warehouse Counts
+## Validated Warehouse Counts
 
 | Table | Row Count |
 |---|---:|
@@ -273,11 +340,25 @@ PASS / FAIL
 | `fact_order` | 100,000 |
 | `fact_order_item` | 250,437 |
 
-## Docker Environment
+---
 
-The complete local environment runs using Docker Compose.
+## PostgreSQL Warehouse Validation
 
-### Services
+The following screenshot shows the warehouse tables and their staging/analytics structure.
+
+![PostgreSQL Tables](screenshots/postgresql_tables.png)
+
+The following screenshot shows the validated warehouse record counts.
+
+![PostgreSQL Warehouse Counts](screenshots/postgresql_warehouse_counts.png)
+
+---
+
+# Docker Environment
+
+The complete local environment runs using **Docker Compose**.
+
+## Services
 
 ```text
 postgres-source
@@ -285,7 +366,7 @@ postgres-target
 airflow
 ```
 
-### Ports
+## Ports
 
 ```text
 Source PostgreSQL → 5433
@@ -293,25 +374,33 @@ Target PostgreSQL → 5434
 Airflow           → 8081
 ```
 
-### Start Environment
+## Start Environment
 
 ```bash
 docker compose up -d
 ```
 
-### Check Containers
+## Check Containers
 
 ```bash
 docker compose ps
 ```
 
-### Open Airflow
+## Open Airflow
 
 ```text
 http://localhost:8081
 ```
 
-## Environment Variables
+---
+
+## Docker Infrastructure
+
+![Docker ETL Infrastructure](screenshots/docker_etl_infrastructure.png)
+
+---
+
+# Environment Variables
 
 Database credentials are stored locally in:
 
@@ -337,23 +426,27 @@ TARGET_DB_USER=
 TARGET_DB_PASSWORD=
 ```
 
-Actual credentials should never be committed to GitHub.
+**Actual credentials should never be committed to GitHub.**
 
-## Manual ETL Execution
+---
 
-### Extract Customers
+# Manual ETL Execution
+
+Individual pipeline components can also be executed manually.
+
+## Extract Customers
 
 ```bash
 python -m src.extract.extract_customers
 ```
 
-### Load Customers
+## Load Customers
 
 ```bash
 python -m src.etl.load_customers
 ```
 
-### Validate Customers
+## Validate Customers
 
 ```bash
 python -m src.validation.customer_quality
@@ -361,21 +454,35 @@ python -m src.validation.customer_quality
 
 The complete pipeline is normally executed through Airflow.
 
-## Airflow Execution
+---
 
-### DAG Overview
+# Airflow Execution
+
+## DAG Overview
+
+The Airflow DAG contains the complete extraction, loading, and validation workflow.
 
 ![Airflow DAG Overview](screenshots/airflow_dag_overview.png)
 
-### Successful Pipeline Run
+---
+
+## Successful Pipeline Run
+
+The complete pipeline successfully executed with all tasks completed successfully.
 
 ![Successful Airflow Run](screenshots/airflow_successful_run.png)
 
-### Airflow Schedule
+---
 
-![Airflow Schedule](screenshots/airflow_schedule.png)
+## Airflow DAG Code
 
-## Key Learning Areas
+The DAG implementation is responsible for defining tasks, dependencies, retries, and scheduling.
+
+![Airflow DAG Code](screenshots/etl_airflow_dag_code.png)
+
+---
+
+# Key Learning Areas
 
 This project demonstrates practical experience with:
 
@@ -397,7 +504,11 @@ This project demonstrates practical experience with:
 - Environment configuration
 - Git version control
 
-## Future Improvements
+---
+
+# Future Improvements
+
+Potential future improvements include:
 
 - AWS deployment
 - External Airflow metadata database
@@ -409,3 +520,4 @@ This project demonstrates practical experience with:
 - CI/CD pipeline
 - Cloud secret management
 - Warehouse performance optimization
+```
